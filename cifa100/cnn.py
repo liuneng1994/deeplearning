@@ -44,7 +44,7 @@ model.add(Dropout(0.25))
 model.add(Flatten())
 model.add(Dense(class_num, activation='softmax',kernel_initializer=keras.initializers.he_normal()))
 
-model.compile(keras.optimizers.SGD(lr=0.1,decay=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(keras.optimizers.SGD(lr=0.1), loss='categorical_crossentropy', metrics=['accuracy'])
 
 train_data = train_data.astype('float32')
 test_data = test_data.astype('float32')
@@ -61,7 +61,7 @@ lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
                                min_lr=0.5e-6)
 callbacks = [checkpoint, lr_reducer]
 
-model.fit(train_data, train_label,epochs=200, validation_data=(test_data, test_label))
+model.fit(train_data, train_label,epochs=50, validation_data=(test_data, test_label), callbacks=callbacks)
 
 scores = model.evaluate(test_data, test_label, verbose=1)
 print('Test loss:', scores[0])

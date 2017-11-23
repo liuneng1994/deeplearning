@@ -1,4 +1,6 @@
 import keras
+from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
+
 from cifa100 import cifar100 as utils
 from keras.layers import *
 from keras.models import *
@@ -45,9 +47,17 @@ test_data = test_data.astype('float32')
 train_data /= 255
 test_data /= 255
 
-model.fit(train_data, train_label,epochs=200, validation_data=(test_data, test_label))
 
-model.save("cifa100.h5")
+checkpoint = ModelCheckpoint(filepath='cifa100cnn.h5',
+                             verbose=1,
+                             save_best_only=True)
+lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+                               cooldown=0,
+                               patience=5,
+                               min_lr=0.5e-6)
+callbacks = [checkpoint, lr_reducer]
+
+model.fit(train_data, train_label,epochs=200, validation_data=(test_data, test_label))
 
 scores = model.evaluate(test_data, test_label, verbose=1)
 print('Test loss:', scores[0])

@@ -1,10 +1,10 @@
 import keras
-import cifa100.cifa100 as utils
+from cifa100 import cifar100 as utils
 from keras.layers import *
 from keras.models import *
 
 class_num = 100
-train_data, train_label, _, test_data, test_label, _ = utils.load_data()
+(train_data, train_label), (test_data, test_label) = utils.load_data()
 train_label = keras.utils.to_categorical(train_label,class_num)
 test_label = keras.utils.to_categorical(test_label,class_num)
 
@@ -45,7 +45,7 @@ test_data = test_data.astype('float32')
 train_data /= 255
 test_data /= 255
 
-model.fit(train_data, train_label, validation_data=(test_data, test_label))
+model.fit(train_data, train_label,epochs=200, validation_data=(test_data, test_label))
 
 model.save("cifa100.h5")
 

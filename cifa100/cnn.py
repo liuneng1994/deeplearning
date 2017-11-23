@@ -1,5 +1,5 @@
 import keras
-from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
+from keras.callbacks import *
 
 from cifa100 import cifar100 as utils
 from keras.layers import *
@@ -57,11 +57,13 @@ checkpoint = ModelCheckpoint(filepath='cifa100cnn.h5',
                              save_best_only=True)
 lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
                                cooldown=0,
-                               patience=5,
+                               patience=2,
                                min_lr=0.5e-6)
-callbacks = [checkpoint, lr_reducer]
+tensorboard = TensorBoard(log_dir='/tmp/deeplogs/cifa100')
+early_stop = EarlyStopping(patience=5)
+callbacks = [checkpoint, lr_reducer,tensorboard,early_stop]
 
-model.fit(train_data, train_label,epochs=50, validation_data=(test_data, test_label), callbacks=callbacks)
+model.fit(train_data, train_label,epochs=100, validation_data=(test_data, test_label), callbacks=callbacks)
 
 scores = model.evaluate(test_data, test_label, verbose=1)
 print('Test loss:', scores[0])

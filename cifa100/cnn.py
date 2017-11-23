@@ -14,30 +14,34 @@ model = Sequential()
 model.add(
     Conv2D(32, (3, 3), padding='same', kernel_initializer=keras.initializers.he_normal(),
            input_shape=train_data.shape[1:]))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Conv2D(32, (3, 3), kernel_initializer=keras.initializers.he_normal()))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPool2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
 model.add(
     Conv2D(64, (3, 3), padding='same', kernel_initializer=keras.initializers.he_normal()))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Conv2D(64, (3, 3), kernel_initializer=keras.initializers.he_normal()))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPool2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
 model.add(Conv2D(128,(3,3),padding='same',kernel_initializer=keras.initializers.he_normal()))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Conv2D(128,(3,3),kernel_initializer=keras.initializers.he_normal()))
+model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPool2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
 model.add(Flatten())
-model.add(Dense(512, activation='relu',kernel_initializer=keras.initializers.he_normal()))
-model.add(Dropout(0.5))
 model.add(Dense(class_num, activation='softmax',kernel_initializer=keras.initializers.he_normal()))
 
 model.compile(keras.optimizers.SGD(lr=0.1,decay=0.001), loss='categorical_crossentropy', metrics=['accuracy'])

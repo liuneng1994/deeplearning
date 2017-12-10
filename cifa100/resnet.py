@@ -72,7 +72,7 @@ checkpoint = ModelCheckpoint(filepath='cifa100res.h5',
                              save_best_only=True)
 lr_reducer = ReduceLROnPlateau(factor=0.1,
                                cooldown=0,
-                               patience=5,
+                               patience=3,
                                min_lr=0.00001)
 tensorboard = TensorBoard(log_dir='/tmp/deeplogs/cifa100_resnet')
 early_stop = EarlyStopping(patience=15)

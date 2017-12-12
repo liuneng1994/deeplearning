@@ -22,18 +22,43 @@ data_set: tf.data.Dataset = data_set.map(lambda record: (record['image'], record
 data_set: tf.data.Dataset = data_set.batch(model.hparam.batch_size)
 iterator = data_set.make_initializable_iterator()
 
-writer = tf.summary.FileWriter("/tmp/deeplearning/")
+
+def update_lr(epoch, sess):
+    if epoch > 0:
+        sess.run(tf.assign(model.lr, 0.01))
+    elif epoch > 20:
+        sess.run(tf.assign(model.lr, 0.001))
+    elif epoch > 40:
+        sess.run(tf.assign(model.lr, 0.0001))
+
 
 with tf.Session() as sess:
-    for _ in range(model.hparam.epochs):
+    writer = tf.summary.FileWriter("/tmp/deeplearning/", sess.graph)
+    sess.run(tf.global_variables_initializer())
+    for epoch in range(model.hparam.epochs):
         sess.run(iterator.initializer)
         while True:
             try:
-                data, label = sess.run(iterator.get_next())
-                sess.run([model.step, model.summary_op, model.losses, model.accuracy, model.global_steps],
-                         feed_dict={model.x: data, model.y: label})
+                x, y = sess.run(iterator.get_next())
+                _, summary, loss, acc, steps = sess.run(
+                    [model.step, model.summary_op, model.losses, model.accuracy, model.global_steps],
+                    feed_dict={model.x: x, model.y: y})
+                tf.logging.log_every_n('debug', "step %5d: losses %.5f ,acc %.5f" % (loss, acc, steps), 100)
+                writer.add_summary(summary, steps)
             except tf.errors.OutOfRangeError:
                 break
+        loss, acc = sess.run([model.losses, model.accuracy],
+                             feed_dict={model.x: data.test_data, model.y: data.test_fine_label})
+        tf.logging.info("epoch %5d: losses %.5f ,acc %.5f" % (loss, acc, epoch))
+        update_lr(epoch, sess)
+
+        for name, value in [('val_loss', loss), ('val_acc', acc)]:
+            summary = tf.Summary()
+            summary_value = summary.value.add()
+            summary_value.simple_value = value
+            summary_value.tag = name
+            writer.add_summary(summary)
+        writer.flush()
 
 if __name__ == '__main__':
     tf.app.run()

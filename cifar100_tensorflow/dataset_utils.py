@@ -42,7 +42,7 @@ class Cifar100:
         self.train_fine_label = train_fine_label
         self.train_coarse_label = train_coarse_label
         self.test_data = test_data
-        self.test_fine_data = test_fine_label
+        self.test_fine_label = test_fine_label
         self.test_coarse_label = test_coarse_label
         self.fine_label_names = fine_label_names
         self.coarse_label_names = coarse_label_names

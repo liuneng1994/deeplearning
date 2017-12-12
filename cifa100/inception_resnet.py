@@ -52,6 +52,7 @@ def inception_res_block(x, filters, padding='same', active='relu'):
     concat_output = concatenate([pool, single_conv, double_conv, linear_conv], axis=3)
     output = conv_2d(concat_output, filters, kernel_size=1)
     output = add([x_shortcut, output])
+    output = BatchNormalization()(output)
     return output
 
 
@@ -68,7 +69,10 @@ output = Conv2D(64, 3, padding='same', kernel_initializer=he_normal(), kernel_re
 output = BatchNormalization()(output)
 output = Activation('relu')(output)
 
-output = inception_res_block(output, 64, padding='valid')
+output = inception_res_block(output, 64)
+output = inception_res_block(output, 64)
+output = AveragePooling2D()(output)
+output = inception_res_block(output, 128)
 output = inception_res_block(output, 128)
 output = AveragePooling2D()(output)
 # output = res_block(output, [256, 256])
@@ -78,7 +82,9 @@ output = Dropout(0.4)(output)
 output = Dense(class_num, activation='softmax')(output)
 
 model = Model(inputs=input, outputs=output)
-model.compile(optimizer=keras.optimizers.SGD(0.1), loss='categorical_crossentropy', metrics=['accuracy'])
+if os.path.exists("cifa100_inception_res.h5"):
+    model.load_weights("cifa100_inception_res.h5")
+model.compile(optimizer=keras.optimizers.SGD(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 train_data = train_data.astype('float32')
 test_data = test_data.astype('float32')
 train_data /= 255
@@ -106,8 +112,8 @@ else:
     datagen.fit(train_data)
     model.fit_generator(datagen.flow(train_data, train_label, batch_size=16),
                         steps_per_epoch=train_data.shape[0] // 16,
-                        workers=4,
-                        epochs=100,
+                        workers=12,
+                        epochs=500,
                         validation_data=(test_data, test_label),
                         callbacks=callbacks)
 

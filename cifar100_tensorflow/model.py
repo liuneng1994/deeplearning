@@ -72,7 +72,9 @@ class InceptionResnet:
         self.hparam = hparam
         self.training = training
         x = tf.placeholder(tf.float32, shape=[None, 32, 32, 3], name="x")
-        y = tf.placeholder(tf.float32, shape=[None, 1], name="y")
+        y = tf.placeholder(tf.int32, shape=[None, 1], name="y")
+        self.x = x
+        self.y = y
         with tf.name_scope("first_conv"):
             output = conv_2d(x, filters=64, kernel_size=3, padding='same')
             output = tf.layers.BatchNormalization()(output, training=self.training)
@@ -91,7 +93,7 @@ class InceptionResnet:
             logits = tf.layers.Dense(self.hparam.classes)(logits)
         self.encode = output
         self.logits = logits
-        self.losses = tf.losses.softmax_cross_entropy(y, logits)
+        self.losses = tf.losses.sparse_softmax_cross_entropy(y, logits)
         self.predict = tf.argmax(tf.nn.softmax(self.logits), axis=1, output_type=tf.int32)
         self.accuracy = tf.metrics.accuracy(y, self.predict)
         if self.training:

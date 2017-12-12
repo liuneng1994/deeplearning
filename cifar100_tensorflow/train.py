@@ -18,8 +18,22 @@ model = InceptionResnet(hparam, training=True)
 data = Cifar100()
 data_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices(
     {'image': data.train_data, 'label': data.train_fine_label})
-data_set = data_set.map(lambda record: (record['image'], record['label']))
+data_set: tf.data.Dataset = data_set.map(lambda record: (record['image'], record['label']))
+data_set: tf.data.Dataset = data_set.batch(model.hparam.batch_size)
 iterator = data_set.make_initializable_iterator()
+
+writer = tf.summary.FileWriter("/tmp/deeplearning/")
+
 with tf.Session() as sess:
-    sess.run(iterator.initializer)
-    print(sess.run(iterator.get_next()))
+    for _ in range(model.hparam.epochs):
+        sess.run(iterator.initializer)
+        while True:
+            try:
+                data, label = sess.run(iterator.get_next())
+                sess.run([model.step, model.summary_op, model.losses, model.accuracy, model.global_steps],
+                         feed_dict={model.x: data, model.y: label})
+            except tf.errors.OutOfRangeError:
+                break
+
+if __name__ == '__main__':
+    tf.app.run()

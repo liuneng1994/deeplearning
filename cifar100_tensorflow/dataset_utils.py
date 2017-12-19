@@ -13,8 +13,8 @@ def unpickle(file: str):
 def _load_data(basedir='.'):
     meta, train, test = (unpickle(os.path.join(basedir, "meta")), unpickle(os.path.join(basedir, "train")),
                          unpickle(os.path.join(basedir, "test")))
-    train_data = train[b'data'].reshape((-1, 3, 32, 32))
-    test_data = test[b'data'].reshape((-1, 3, 32, 32))
+    train_data = train[b'data'].reshape((-1, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.float32)/255
+    test_data = test[b'data'].reshape((-1, 3, 32, 32)).transpose(0, 2, 3, 1).astype(np.float32)/255
     train_fine_label = np.asarray(train[b'fine_labels']).reshape((-1, 1))
     train_coarse_label = np.asarray(train[b'coarse_labels']).reshape((-1, 1))
     test_fine_label = np.asarray(test[b'fine_labels']).reshape((-1, 1))

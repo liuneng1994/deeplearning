@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 from cifar100_tensorflow.model import InceptionResnet, HParam
 from cifar100_tensorflow.dataset_utils import Cifar100
+import os
+import datetime
 
 tf.flags.DEFINE_float("learning_rate", 0.01, "training learning rate")
 tf.flags.DEFINE_integer("batch_size", 16, "training batch size")
@@ -16,11 +18,10 @@ hparam = HParam(flags.classes, keep_prop=flags.keep_prop, lr=flags.learning_rate
 model = InceptionResnet(hparam, training=True)
 
 data = Cifar100()
-data_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices(
-    {'image': data.train_data, 'label': data.train_fine_label})
-data_set: tf.data.Dataset = data_set.map(lambda record: (record['image'], record['label']))
+data_set: tf.data.Dataset = tf.data.Dataset.from_tensor_slices(( data.train_data, data.train_fine_label))
 data_set: tf.data.Dataset = data_set.batch(model.hparam.batch_size)
 iterator = data_set.make_initializable_iterator()
+x,y = iterator.get_next()
 
 
 def update_lr(epoch, sess):
@@ -32,33 +33,35 @@ def update_lr(epoch, sess):
         sess.run(tf.assign(model.lr, 0.0001))
 
 
+writer = tf.summary.FileWriter("/tmp/deeplearning/inception_resnet", tf.get_default_graph())
+os.makedirs("/tmp/deeplearning/inception_resnet",exist_ok=True)
 with tf.Session() as sess:
-    writer = tf.summary.FileWriter("/tmp/deeplearning/", sess.graph)
+    saver = tf.train.Saver()
     sess.run(tf.global_variables_initializer())
+    if os.path.exists("/tmp/deeplearning/inception_resnet/checkpoint.ckpt"):
+        saver.restore(sess,"/tmp/deeplearning/inception_resnet/checkpoint.ckpt")
     for epoch in range(model.hparam.epochs):
         sess.run(iterator.initializer)
         while True:
             try:
-                x, y = sess.run(iterator.get_next())
-                _, summary, loss, acc, steps = sess.run(
-                    [model.step, model.summary_op, model.losses, model.accuracy, model.global_steps],
-                    feed_dict={model.x: x, model.y: y})
-                tf.logging.log_every_n('debug', "step %5d: losses %.5f ,acc %.5f" % (loss, acc, steps), 100)
-                writer.add_summary(summary, steps)
+                input,output = sess.run([x,y])
+                _, predict,loss, acc, steps = sess.run(
+                    [model.step, model.predict, model.losses, model.accuracy, model.global_steps],
+                    feed_dict={model.x: input, model.y: output})
+                if steps % 100 == 0:
+                    print("step %05d: losses is %.5f ,acc is %.5f" % (steps,loss, acc))
             except tf.errors.OutOfRangeError:
                 break
-        loss, acc = sess.run([model.losses, model.accuracy],
+        # saver.save(sess,"/tmp/deeplearning/inception_resnet/checkpoint.ckpt",epoch)
+        summary, loss, acc = sess.run([model.summary_op,model.losses, model.accuracy],
+                             feed_dict={model.x: data.train_data[0:1000,:,:,:], model.y: data.train_fine_label[0:1000]})
+        print("train epoch %05d: losses %.5f ,acc %.5f" % (epoch,loss, acc))
+        writer.add_summary(summary, epoch)
+        summary, loss, acc = sess.run([model.test_summary_op,model.losses, model.accuracy],
                              feed_dict={model.x: data.test_data, model.y: data.test_fine_label})
-        tf.logging.info("epoch %5d: losses %.5f ,acc %.5f" % (loss, acc, epoch))
+        print("tes epoch %05d: losses %.5f ,acc %.5f" % (epoch,loss, acc))
+        writer.add_summary(summary, epoch)
         update_lr(epoch, sess)
-
-        for name, value in [('val_loss', loss), ('val_acc', acc)]:
-            summary = tf.Summary()
-            summary_value = summary.value.add()
-            summary_value.simple_value = value
-            summary_value.tag = name
-            writer.add_summary(summary)
-        writer.flush()
 
 if __name__ == '__main__':
     tf.app.run()

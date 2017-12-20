@@ -3,9 +3,10 @@ import numpy as np
 import datetime
 
 (train_data, train_label), (test_data, test_label) = load_data()
-batches = np.split(train_data, 20, 0)
+batches = np.split(train_data, 5000, 0)
+l = []
 start = datetime.datetime.now()
 for batch in batches:
-    batch.shape
+    l.append(np.shape(batch))
 end = datetime.datetime.now()
-print("cost %d ms" % (end - start).microseconds)
+print("cost %d ms" % ((end - start).microseconds/1000))

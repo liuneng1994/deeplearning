@@ -25,9 +25,9 @@ def inception_res_block(x, filters, padding='same', active='relu'):
     else:
         x_shortcut = conv_2d(x, filters, strides=1, padding='same')
     x_shortcut = BatchNormalization()(x_shortcut)
-    x_shortcut = Activation(active)(x_shortcut)
 
     pool = conv_2d(x_shortcut, 64, kernel_size=1)
+    pool = BatchNormalization()(pool)
     pool = MaxPool2D(strides=1, padding='same')(pool)
 
     single_conv = conv_2d(x_shortcut, 64, padding='same')
@@ -51,8 +51,8 @@ def inception_res_block(x, filters, padding='same', active='relu'):
 
     concat_output = concatenate([pool, single_conv, double_conv, linear_conv], axis=3)
     output = conv_2d(concat_output, filters, kernel_size=1)
-    output = add([x_shortcut, output])
     output = BatchNormalization()(output)
+    output = add([x_shortcut, output])
     return output
 
 
@@ -69,6 +69,7 @@ output = Conv2D(64, 3, padding='same', kernel_initializer=he_normal(), kernel_re
 output = BatchNormalization()(output)
 output = Activation('relu')(output)
 
+output = inception_res_block(output, 32)
 output = inception_res_block(output, 64)
 output = inception_res_block(output, 64)
 output = AveragePooling2D()(output)
@@ -77,14 +78,14 @@ output = inception_res_block(output, 128)
 output = AveragePooling2D()(output)
 # output = res_block(output, [256, 256])
 output = Flatten()(output)
+output = Dropout(0.5)(output)
 output = Dense(256, activation='relu')(output)
-output = Dropout(0.4)(output)
 output = Dense(class_num, activation='softmax')(output)
 
 model = Model(inputs=input, outputs=output)
 if os.path.exists("cifa100_inception_res.h5"):
     model.load_weights("cifa100_inception_res.h5")
-model.compile(optimizer=keras.optimizers.SGD(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=keras.optimizers.SGD(0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 train_data = train_data.astype('float32')
 test_data = test_data.astype('float32')
 train_data /= 255
@@ -93,27 +94,27 @@ test_data /= 255
 checkpoint = ModelCheckpoint(filepath='cifa100_inception_res.h5',
                              verbose=1,
                              save_best_only=True)
-lr_reducer = ReduceLROnPlateau(factor=0.1,
+lr_reducer = ReduceLROnPlateau(factor=0.01,
                                cooldown=0,
                                patience=3,
                                min_lr=0.00001)
 tensorboard = TensorBoard(log_dir='/tmp/deeplogs/cifa100_inception_resnet')
-early_stop = EarlyStopping(patience=15)
+early_stop = EarlyStopping(patience=8)
 callbacks = [checkpoint, lr_reducer, tensorboard, early_stop]
 if os.path.exists('/tmp/deeplogs/cifa100_inception_resnet'):
     rmtree('/tmp/deeplogs/cifa100_inception_resnet')
 if not data_augmentation:
-    model.fit(train_data, train_label, batch_size=16, epochs=500, validation_data=(test_data, test_label),
+    model.fit(train_data, train_label, batch_size=32, epochs=500, validation_data=(test_data, test_label),
               callbacks=callbacks)
 else:
     datagen = ImageDataGenerator(width_shift_range=0.1,
                                  height_shift_range=0.1,
                                  horizontal_flip=True)
     datagen.fit(train_data)
-    model.fit_generator(datagen.flow(train_data, train_label, batch_size=16),
-                        steps_per_epoch=train_data.shape[0] // 16,
+    model.fit_generator(datagen.flow(train_data, train_label, batch_size=32),
+                        steps_per_epoch=train_data.shape[0] // 32,
                         workers=12,
-                        epochs=500,
+                        epochs=200,
                         validation_data=(test_data, test_label),
                         callbacks=callbacks)
 

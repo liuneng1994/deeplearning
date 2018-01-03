@@ -1,6 +1,6 @@
-from skimage import io
 import PIL.Image
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def load_image(filename, shape=None, max_size=None):
@@ -30,4 +30,4 @@ def load_image(filename, shape=None, max_size=None):
 
 
 def save_image(image, path):
-    io.imsave(path, image)
+    plt.imsave(path, image.astype(np.uint8))

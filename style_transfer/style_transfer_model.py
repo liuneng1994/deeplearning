@@ -67,16 +67,14 @@ class StyleTransfer:
         sess.run(tf.global_variables_initializer())
 
         for i in range(0, num_step):
-            sess.run(step, feed_dict=self._get_feed_dict())
-            if i % log_interval:
-                content_loss, style_loss, total_loss = sess.run([self.L_content, self.L_style, self.L_total],
-                                                                feed_dict=self._get_feed_dict())
-                print('step : %4d, ' % i,
-                      'L_total : %g, L_content : %g, L_style : %g' % (total_loss, content_loss, style_loss))
+            _,content_loss, style_loss, total_loss= sess.run([step,self.L_content, self.L_style, self.L_total], feed_dict=self._get_feed_dict())
+            print('step : %4d, ' % i,
+                  'L_total : %g, L_content : %g, L_style : %g' % (total_loss, content_loss, style_loss))
+            if i % log_interval==0:
                 if image_log_dir is not None:
                     if not os.path.exists(image_log_dir):
                         os.mkdir(image_log_dir)
-                    filename = 'step_%d' % i
+                    filename = 'step_%d.jpg' % i
                     full_path = os.path.join(image_log_dir, filename)
                     image = self.init.eval(sess)
                     image = np.clip(self.vgg_model.undo_preprocess(image), 0, 255)
@@ -124,5 +122,5 @@ class StyleTransfer:
         shape = x.get_shape()
         channels = shape[3]
         matrix = tf.reshape(x, (-1, channels))
-        gram = tf.matmul(matrix, tf.transpose(matrix))
+        gram = tf.matmul(tf.transpose(matrix),matrix)
         return gram

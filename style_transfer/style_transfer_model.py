@@ -93,21 +93,6 @@ class StyleTransfer:
 
         optimizer = tf.contrib.opt.ScipyOptimizerInterface(self.L_total, method='L-BFGS-B', options={'maxiter': num_step})
         optimizer.minimize(sess,feed_dict=self._get_feed_dict(),fetches=[self.L_total,self.L_content,self.L_style,self.init], loss_callback=callback)
-        """ for i in range(0, num_step + 1):
-             _, content_loss, style_loss, total_loss = sess.run([step, self.L_content, self.L_style, self.L_total],
-                                                                feed_dict=self._get_feed_dict())
-             print('step : %4d, ' % i,
-                   'L_total : %g, L_content : %g, L_style : %g' % (total_loss, content_loss, style_loss))
-             if i % log_interval == 0:
-                 if image_log_dir is not None:
-                     if not os.path.exists(image_log_dir):
-                         os.mkdir(image_log_dir)
-                     filename = 'step_%d.jpg' % i
-                     full_path = os.path.join(image_log_dir, filename)
-                     image = self.init.eval(sess)
-                     image = np.clip(self.vgg_model.undo_preprocess(image), 0, 255)
-                     image = image.reshape(image.shape[1:])
-                     utils.save_image(image, path=full_path)"""
 
         final_image = self.init.eval(sess)
         final_image = np.clip(self.vgg_model.undo_preprocess(final_image), 0, 255)

@@ -4,4 +4,6 @@
 *.pyc
 *.h5
 **/*pycache
-*.jpg
+log
+
+

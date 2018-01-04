@@ -30,4 +30,7 @@ def load_image(filename, shape=None, max_size=None):
 
 
 def save_image(image, path):
-    plt.imsave(path, image.astype(np.uint8))
+    image= np.clip(image,0.0,255.0)
+    image = image.astype(np.uint8)
+    with open(path, "wb") as file:
+        PIL.Image.fromarray(image).save(file,'jpeg')

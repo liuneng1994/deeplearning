@@ -16,11 +16,11 @@ def parse_args():
                         help='The directory where the pre-trained model was saved')
     parser.add_argument('--content', type=str, default='C:\\Users\liuneng\Documents\Zapya\Photo\saber.jpg',
                         help='File path of content image (notation in the paper : p)')
-    parser.add_argument('--style', type=str, default='C:\\Users\liuneng\Documents\Zapya\Photo\starry-night.jpg',
+    parser.add_argument('--style', type=str, default='F:\下载\\fa527ff61e2ccfdeac233a1c3a14b297.jpg',
                         help='File path of style image (notation in the paper : a)')
     parser.add_argument('--output', type=str, default='result.jpg', help='File path of output image')
 
-    parser.add_argument('--loss_ratio', type=float, default=1e-3, help='Weight of content-loss relative to style-loss')
+    parser.add_argument('--loss_ratio', type=float, default=1e-1, help='Weight of content-loss relative to style-loss')
 
     parser.add_argument('--content_layers', nargs='+', type=str, default=['conv4_2'],
                         help='VGG19 layers used for content loss')
@@ -43,7 +43,7 @@ def parse_args():
 
     parser.add_argument('--image_log_dir', type=str, default='log', help='generated image log path')
 
-    parser.add_argument('--learning_rate', type=float, default=0.01, help='model learning rate')
+    parser.add_argument('--learning_rate', type=float, default=0.00001, help='model learning rate')
 
     return check_args(parser.parse_args())
 
@@ -141,5 +141,5 @@ def main():
                                                                     steps=args.steps,
                                                                     style_layers=STYLE_LAYERS))
         final_image = model.generate(sess)
-        utils.save_image(final_image, args.out)
+        utils.save_image(final_image, args.output)
 

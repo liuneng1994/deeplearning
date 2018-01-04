@@ -12,15 +12,15 @@ def parse_args():
     desc = "Style Transfer"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--model_path', type=str, default='/Users/liuneng/Documents/GitHub/tensorflow-style-transfer/pre_trained_model',
+    parser.add_argument('--model_path', type=str, default='C:\\Users\liuneng\Documents\Zapya\Misc',
                         help='The directory where the pre-trained model was saved')
-    parser.add_argument('--content', type=str, default='/Users/liuneng/Pictures/桌面壁纸/4e720c25f85aabd644731eba6eec7b29.jpg',
+    parser.add_argument('--content', type=str, default='C:\\Users\liuneng\Documents\Zapya\Photo\saber.jpg',
                         help='File path of content image (notation in the paper : p)')
-    parser.add_argument('--style', type=str, default='/Users/liuneng/Documents/GitHub/tensorflow-style-transfer/images/starry-night.jpg',
+    parser.add_argument('--style', type=str, default='F:\下载\\fa527ff61e2ccfdeac233a1c3a14b297.jpg',
                         help='File path of style image (notation in the paper : a)')
     parser.add_argument('--output', type=str, default='result.jpg', help='File path of output image')
 
-    parser.add_argument('--loss_ratio', type=float, default=1e-3, help='Weight of content-loss relative to style-loss')
+    parser.add_argument('--loss_ratio', type=float, default=1e-1, help='Weight of content-loss relative to style-loss')
 
     parser.add_argument('--content_layers', nargs='+', type=str, default=['conv4_2'],
                         help='VGG19 layers used for content loss')
@@ -39,11 +39,11 @@ def parse_args():
 
     parser.add_argument('--steps', type=int, default=1000, help='The number of iterations to run')
 
-    parser.add_argument('--log_interval', type=int, default=20, help='step interval of log and generated image')
+    parser.add_argument('--log_interval', type=int, default=100, help='step interval of log and generated image')
 
-    parser.add_argument('--image_log_dir', type=str, default='/tmp/log/style_transfer', help='generated image log path')
+    parser.add_argument('--image_log_dir', type=str, default='log', help='generated image log path')
 
-    parser.add_argument('--learning_rate', type=float, default=0.01, help='model learning rate')
+    parser.add_argument('--learning_rate', type=float, default=0.00001, help='model learning rate')
 
     return check_args(parser.parse_args())
 
@@ -141,5 +141,5 @@ def main():
                                                                     steps=args.steps,
                                                                     style_layers=STYLE_LAYERS))
         final_image = model.generate(sess)
-        utils.save_image(final_image, args.out)
+        utils.save_image(final_image, args.output)
 

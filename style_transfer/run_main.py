@@ -43,7 +43,6 @@ def parse_args():
 
     parser.add_argument('--image_log_dir', type=str, default='log', help='generated image log path')
 
-    parser.add_argument('--learning_rate', type=float, default=0.00001, help='model learning rate')
 
     return check_args(parser.parse_args())
 
@@ -134,7 +133,6 @@ def main():
                                                                     style_image=style_image,
                                                                     init_image=init_image,
                                                                     content_layers=CONTENT_LAYERS,
-                                                                    learning_rate=args.learning_rate,
                                                                     log_interval=args.log_interval,
                                                                     image_log_dir=args.image_log_dir,
                                                                     loss_ratio=args.loss_ratio,

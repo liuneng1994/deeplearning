@@ -11,18 +11,26 @@ class Options:
     """
 
     def __init__(self, model_path, content_image, init_image, style_image, content_layers, style_layers,
-                 loss_ratio, learning_rate, steps, log_interval, image_log_dir=None):
+                 loss_ratio, steps, log_interval, image_log_dir=None):
+        # path of saving generated image log
         self.image_log_dir = image_log_dir
+        # interval of saving image log
         self.log_interval = log_interval
+        # max training step num
         self.steps = steps
-        self.learning_rate = learning_rate
+        # vgg19 model path
         self.vgg_model_path = model_path
+        # ndarray of content image
         self.content_image = content_image
+        # ndarray of init image
         self.init_image = init_image
+        # ndarray of style image
         self.style_image = style_image
-
+        # layer weights of content loss
         self.content_layers = content_layers
+        # layer weights of style layer
         self.style_layers = style_layers
+        # content loss ratio,style loss ratio always is 1
         self.loss_ratio = loss_ratio
 
 
